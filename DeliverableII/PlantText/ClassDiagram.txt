@@ -1,0 +1,198 @@
+@startuml
+skinparam dpi 72
+title  Class Diagram
+
+' ======================= Domain Classes =======================
+class User {
+  +userId: String
+  +email: String
+  +displayName: String
+}
+class AITravelAgent {
+  +planTrip(request:TripRequest):TripPlanSummary
+  +generateItinerary(request: Trip,prefs: Preference): Itinerary
+}
+
+class Preference {
+  +userId: String
+  +descriptions: String
+}
+class TripRequest {
+  +origin: String
+  +destination: String
+  +startDate: Date
+  +endDate: Date
+  +budget: Float
+  +preferences: Preference
+  +transportMode: String  <<flight|driving|both>>
+  +homeCurrency: String
+  +destinationCurrency: String
+
+}
+class Trip {
+  +tripId: String
+  +userId: String
+  +origin: String
+  +destination: String
+  +startDate: Date
+  +endDate: Date
+  +budget: Float
+  +homeCurrency: String
+  +destinationCurrency: String
+  +createdAt: DateTime
+  +status: String
+  +planSummary: String
+}
+
+class Itinerary {
+  +itineraryId: String
+  +tripId: String
+  +summary: String
+  +generatedAt: DateTime
+}
+
+class ItineraryDay {
+  +itineraryId: String
+  +dayNumber: Integer
+  +date: Date
+  +weatherSummary: String
+  +activities: List<String>
+  +notes: String
+}
+
+class Location {
+  +latitude: Float
+  +longitude: Float
+  +cityName: String
+  +country: String
+}
+
+class WeatherForecast {
+  +tripId: String
+  +date: Date
+  +tempHigh: Float
+  +tempLow: Float
+  +condition: String
+  +precipChance: Float
+}
+
+class FlightOption {
+  +tripId: String
+  +carrier: String
+  +flightNumber: String
+  +departureTime: DateTime
+  +arrivalTime: DateTime
+  +price: Float
+}
+
+class RouteEstimate {
+  +tripId: String
+  +mode: String
+  +durationMinutes: Integer
+  +distanceKm: Float
+}
+
+class Attraction {
+  +tripId: String
+  +name: String
+  +type: String
+  +rating: Float
+  +address: String
+}
+
+class CurrencyRate {
+  +tripId: String
+  +baseCurrency: String
+  +targetCurrency: String
+  +rate: Float
+  +retrievedAt: DateTime
+}
+
+
+class AuthService {
+  +generateAuthUrl(state: String): String
+  +handleCallback(code: String, state: String): User
+  +logout(userId: String): void
+}
+
+
+class WeatherService {
+  +getForecast(dest: Location, dates: List<Date>): List<WeatherForecast>
+}
+
+class FlightService {
+  +getFlights(origin: String, dest: String, dates: List<Date>): List<FlightOption>
+}
+
+class PlacesService {
+  +geocode(destination: String): Location
+  +getPointsOfInterest(loc: placeID): List<Attraction>
+  +estimateRoute(origin: String, dest: String): RouteEstimate
+}
+
+class CurrencyService {
+  +getRate(homeCurrency: String, destCurrency: String): CurrencyRate
+}
+
+
+
+class TripRepository {
+  +saveTrip(trip: Trip, prefs: Preference, itinerary: Itinerary, days: List<ItineraryDay>): void
+  +findTripsByUser(userId: String): List<Trip>
+  +findTripWithDetails(tripId: String, userId: String): Trip
+  +deleteTrip(userId: String, tripId: String): void
+}
+
+class PreferenceRepository {
+  +getPreference(userId: String): Preference
+  +savePreference(pref: Preference): void
+}
+
+class UserRepository {
+  +upsertUser(profile: User): User
+  +findUser(userId: String): User
+}
+
+class OpenAIService {
+  +generateRecommendations(message:String):TripPlanSummary
+}
+
+User "1" *-- "0..*" Trip : "owns"
+User "1" *-- "0..*" TripRequest : "owns
+User "1" *-- "0..1" Preference : "has"
+Trip "1" *-- "0..1" Itinerary : "has"
+Itinerary "1" *-- "1..*" ItineraryDay : "composed of"
+
+Trip "1" o-- "1" Location : "destination"
+Trip "1" o-- "0..*" WeatherForecast : "weather"
+Trip "1" o-- "0..*" FlightOption : "flights"
+Trip "1" o-- "0..*" RouteEstimate : "routes"
+Trip "1" o-- "0..*" Attraction : "attractions"
+Trip "1" o-- "0..*" CurrencyRate : "currency history"
+
+TripRequest "0..*"  <-- "1" Preference
+AuthService ..> User : "authenticates"
+AuthService ..> UserRepository : "uses"
+
+AITravelAgent ..> WeatherService : "calls"
+AITravelAgent ..> FlightService : "calls"
+AITravelAgent ..> PlacesService : "calls"
+AITravelAgent ..> OpenAIService : "calls"
+AITravelAgent ..> CurrencyService : "calls"
+AITravelAgent ..> TripRepository : "CRUD"
+
+AITravelAgent ..> Trip : "creates/uses"
+AITravelAgent ..> Preference : "uses"
+AITravelAgent ..> TripRequest: "uses"
+WeatherService ..> WeatherForecast : "creates"
+PlacesService ..> Attraction : "finds"
+FlightService ..> FlightOption : "finds"
+PlacesService ..> RouteEstimate : "uses"
+
+
+PreferenceRepository ..> Preference : "CRUD"
+UserRepository ..> User : "persists"
+
+CurrencyService ..> CurrencyRate : "creates"
+
+@enduml

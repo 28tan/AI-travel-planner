@@ -1,0 +1,59 @@
+@startuml
+title AI travel planner agent web application- Use Case Diagram
+left to right direction
+
+actor "User(Logged-In)" as Traveler
+
+actor "Google OAuth" as OAuth
+actor "OpenWeather API" as Weather
+actor "Aviationstack Flight API" as Flights
+actor "Google Maps APIs" as Maps
+actor "ExchangeRate-API" as FX
+actor "MongoDB Atlas" as Mongo
+actor "OpenAI API" as OpenAI
+
+rectangle "AI Travel Planner Web App" as System {
+
+  usecase "UC1: Log In" as UC1
+  usecase "UC2: Manage Travel Preferences" as UC2
+  usecase "UC3: Plan Trip" as UC3
+  usecase "UC4: View Weather Forecast" as UC4
+  usecase "UC5: Search Transport\n(Flights / Driving)" as UC5
+  usecase "UC6: View Points of Interest" as UC6
+  usecase "UC7: View Trip Summary" as UC7
+  usecase "UC8: Generate AI Itinerary" as UC8
+  usecase "UC9: Manage Trips\n(Save / View / Delete)" as UC9
+}
+
+Traveler --> UC1
+Traveler --> UC2
+Traveler --> UC3
+Traveler --> UC4
+Traveler --> UC5
+Traveler --> UC6
+Traveler --> UC7
+Traveler --> UC8
+Traveler --> UC9
+
+UC1 --> OAuth
+UC2 --> Mongo
+UC3 --> Weather
+UC3 --> Flights
+UC3 --> Maps
+UC3 --> FX
+UC3 --> OpenAI
+
+UC4 --> Weather
+UC5 --> Flights
+UC5 --> Maps
+UC6 --> Maps
+
+UC7 --> Mongo
+UC8 --> OpenAI
+UC8 --> Weather
+UC8 --> Maps
+UC8 --> FX
+
+UC9 --> Mongo
+
+@enduml

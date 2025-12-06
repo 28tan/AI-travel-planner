@@ -1,0 +1,22 @@
+@startuml
+title State Diagram - Trip Lifecycle
+
+[*] --> Draft
+
+Draft --> Planned : planTrip()\nsuccess
+Planned --> ItineraryGenerated : generateItinerary()\nsuccess
+ItineraryGenerated --> Saved : saveTrip()
+Saved --> Updated : planTrip() again\nor regenerateItinerary()
+Updated --> Saved : saveTrip()
+
+Saved --> Archived : archiveTrip()
+Saved --> Cancelled : cancelTrip()
+Archived --> Deleted : deleteTrip()
+Cancelled --> Deleted : deleteTrip()
+
+Planned --> Cancelled : user cancels\nbefore itinerary
+Draft --> Cancelled : user discards draft
+
+Deleted --> [*]
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+title SD - View Points of Interest
+
+actor Traveler as User
+participant Frontend
+participant Backend
+participant TripRepository
+participant PlacesService
+participant "Google Maps APIs" as GoogleMaps
+participant MongoDB
+
+User -> Frontend: Click "View Attractions"
+Frontend -> Backend: GET /api/trips/{tripId}/pois
+
+Backend -> TripRepository: loadTrip(tripId, userId)
+TripRepository -> MongoDB: findTrip(tripId)
+MongoDB --> TripRepository: Trip
+TripRepository --> Backend: Trip data
+
+Backend -> PlacesService: getPointsOfInterest(List<placeID>)
+PlacesService -> GoogleMaps: Nearby Search API\n(attractions, restaurants, landmarks)
+GoogleMaps --> PlacesService: POI list
+PlacesService --> Backend: List<PointOfInterest>
+
+Backend --> Frontend: 200 POIResponse
+Frontend --> User: Display attractions,\ntypes, ratings, photos
+
+@enduml

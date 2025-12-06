@@ -1,0 +1,64 @@
+@startuml
+title SSD
+
+actor "Logged-In User" as User
+participant "AI Travel Planner System" as System
+participant "Google OAuth" as OAuth
+participant "OpenWeather API" as OpenWeather
+participant "Aviationstack Flight API" as Aviationstack
+participant "Google Maps APIs" as GoogleMaps
+participant "ExchangeRate-API" as FX
+participant "OpenAI API" as OpenAI
+participant "MongoDB Atlas" as Mongo
+
+== Login ==
+User -> System: Click "Sign in with Google"
+System -> OAuth: Authenticate user
+OAuth --> System: Token + profile
+System -> Mongo: Upsert user profile
+Mongo --> System: User record saved
+System --> User: Login success,\nredirect to dashboard
+
+== Plan Trip ==
+User -> System: Submit trip request\n(origin, destination, dates,\npreferences, transport mode)
+System -> GoogleMaps: Geocode destination
+GoogleMaps --> System: Coordinates
+
+System -> OpenWeather: Get forecast\nfor destination and dates
+OpenWeather --> System: Weather forecast
+
+System -> GoogleMaps: Search Points of Interest\n(attractions, restaurants, landmarks)
+GoogleMaps --> System: Points of Interest
+
+System -> FX: Get currency rate\n(home -> destination)
+FX --> System: Exchange rate
+
+System -> Aviationstack: Search flights\n(if flights requested)
+Aviationstack --> System: Flight options
+
+System -> OpenAI:  AI analysis\nof trip
+OpenAI --> System: AI comments / summary
+
+System -> Mongo: save trip plan
+Mongo --> System: Stored
+
+System --> User: Trip Plan Summary\n(weather, transport, POIs, budget, AI notes)
+
+== Generate Itinerary ==
+User -> System: Request AI itinerary\nfor planned trip
+System -> Mongo: Load trip + prefs
+Mongo --> System: Trip + preferences
+
+System -> OpenWeather: Confirm forecast 
+System -> GoogleMaps: Confirm POIs/routes
+System -> FX: Confirm currency 
+
+System -> OpenAI: Prompt with trip, prefs,\nweather, transport, POIs
+OpenAI --> System: Structured itinerary\n(day-by-day)
+
+System -> Mongo: Save itinerary
+Mongo --> System: Saved
+
+System --> User: Display AI itinerary\n(day-by-day plan)
+
+@enduml

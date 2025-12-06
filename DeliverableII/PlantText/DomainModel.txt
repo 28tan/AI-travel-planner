@@ -1,0 +1,87 @@
+@startuml
+title Domain Model
+
+class User {
+  +name
+  +email
+}
+
+class Preference {
+  +activityTypes
+  +climatePreference
+  +pace
+  +budgetRange
+}
+
+class Trip {
+  +origin
+  +destination 
+  +startDate
+  +endDate
+  +budget
+  +homeCurrency
+  +destinationCurrency
+  +transportMode
+  +createdAt
+  +status
+}
+
+class Itinerary {
+  +summary
+  +generatedAt
+}
+
+class ItineraryDay {
+  +dayNumber
+  +date
+  +weatherSummary
+  +notes
+}
+
+class PointOfInterest {
+  +name: 
+  +type: 
+  +rating: 
+  +address:
+}
+
+class FlightOption {
+  +carrier: 
+  +flightNumber: 
+  +departureTime:
+  +arrivalTime:
+  +price
+}
+
+class RouteEstimate {
+  +distanceKm
+  +durationMinutes
+}
+
+class WeatherForecast {
+  +date
+  +tempHigh
+  +tempLow
+  +precipChance
+  +condition
+}
+
+class CurrencyRate {
+  +baseCurrency
+  +targetCurrency
+  +rate
+  +retrievedAt
+}
+
+User "1" *-- "0..*" Trip
+User "1" *-- "0..1" Preference
+Trip "1" *-- "0..1" Itinerary
+Itinerary "1" *-- "1..*" ItineraryDay
+
+Trip "1" *-- "0..*" PointOfInterest
+Trip "1" *-- "0..*" FlightOption
+Trip "1" *-- "0..*" RouteEstimate
+Trip "1" *-- "0..*" WeatherForecast
+Trip "1" *-- "0..1" CurrencyRate
+
+@enduml

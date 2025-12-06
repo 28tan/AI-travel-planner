@@ -1,0 +1,44 @@
+@startuml
+title Activity Diagram - Plan Trip and Generate Itinerary
+
+|User|
+start
+:Open app and log in;
+:Fill trip form\n(origin, destination, dates,\nbudget, preferences, transport mode);
+:Click "Plan Trip";
+
+|Frontend|
+:Send TripRequest to backend;
+
+|Backend|
+:Validate TripRequest;
+:Geocode destination;
+:Fetch weather forecast;
+:Fetch flights (if requested);
+:Fetch driving route (if requested);
+:Fetch Points of Interest;
+:Fetch currency rate;
+:Request Open AI summary of TripPlan;
+:Return summary to frontend;
+
+|User|
+:Review trip summary;
+if (Satisfied with plan?) then (yes)
+  :Click "Generate Itinerary";
+  |Frontend|
+  :Send ItineraryRequest to backend;
+  |Backend|
+  :Load trip and preferences;
+  :Refresh or reuse supporting data;
+  :Call Open ai to build itinerary;
+  :Save itinerary in MongoDB;
+  :Return itinerary to frontend;
+  |User|
+  :View day-by-day itinerary;
+else (no)
+  :Adjust dates or preferences;
+  :Re-run Plan Trip;
+endif
+stop
+
+@enduml

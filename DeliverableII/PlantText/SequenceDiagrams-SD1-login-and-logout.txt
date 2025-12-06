@@ -1,0 +1,39 @@
+@startuml
+title SD Log In and Log Out
+
+actor User
+participant Frontend
+participant Backend
+participant Google as OAuth
+participant AuthService
+participant MongoDB
+
+== Log In ==
+User -> Frontend: Click "Sign In with Google"
+Frontend -> Backend: GET /auth/login
+Backend -> AuthService: generateAuthUrl(state)
+AuthService --> Backend: redirect URL
+Backend --> Frontend: 302 Redirect to Google
+Frontend -> OAuth: OAuth consent
+OAuth --> User: Prompt for approval
+User -> OAuth: Approve
+OAuth --> Backend: GET /auth/callback.
+
+Backend -> AuthService: validateState(state)
+AuthService -> OAuth: exchangeCode(code)
+OAuth --> AuthService: access_token + profile
+AuthService -> MongoDB: updateUser(profile)
+MongoDB --> AuthService: Traveler record
+AuthService -> Backend: createSession(userId)
+Backend --> Frontend: 302 Redirect (set httpOnly cookie)
+Frontend --> User: Redirect to app (authenticated)
+
+== Log Out ==
+User -> Frontend: Click "Log Out"
+Frontend -> Backend: POST /auth/logout
+Backend -> AuthService: logout(userId)
+AuthService --> Backend: session cleared
+Backend --> Frontend: 302 Redirect to home
+Frontend --> User: Show public home (logged out)
+
+@enduml

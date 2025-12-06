@@ -1,0 +1,43 @@
+@startuml
+title SD - View Transportation Options 
+
+actor Traveler as User
+participant Frontend
+participant Backend
+participant TripRepository
+participant FlightService
+participant PlacesService
+participant "Aviationstack Flight API" as Aviationstack
+participant "Google Maps APIs" as GoogleMaps
+participant MongoDB
+
+User -> Frontend: Open "Transport Options"
+Frontend -> Backend: GET /api/trips/{tripId}/transport
+
+Backend -> TripRepository: loadTrip(tripId, userId)
+TripRepository -> MongoDB: findTrip(tripId)
+MongoDB --> TripRepository: Trip
+TripRepository --> Backend: Trip data
+
+alt flights requested
+  Backend -> FlightService: getFlights(origin, dest, dates)
+  FlightService -> Aviationstack: Search flights
+  Aviationstack --> FlightService: Flight options
+  FlightService --> Backend: List<FlightOption>
+else no flights
+  Backend -> Backend: Skip flights
+end
+
+alt driving requested
+  Backend -> PlacesService: estimateRoute(origin, dest)
+  PlacesService -> GoogleMaps: Directions API
+  GoogleMaps --> PlacesService: Route data
+  PlacesService --> Backend: Driving route info
+else no driving
+  Backend -> Backend: Skip driving
+end
+
+Backend --> Frontend: 200 TransportOptions(flights, driving)
+Frontend --> User: Display flights and/or driving routes
+
+@enduml
