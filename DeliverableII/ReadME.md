@@ -396,7 +396,7 @@ This section explains the main system operations, with each having a System Oper
 | Pre-conditions: | User authenticated, user makes request to plan trip |
 | Post-conditions: | Users receive tip plans. |
 
-![Sequence Diagram for the Plan Trip operation](Images\SequenceDiagrams-SD2-Plan-Trip.png)
+![Sequence Diagram for the Plan Trip operation](Images/SequenceDiagrams-SD2-Plan-Trip.png)
 
 #### SD3 generate Itinerary
 
