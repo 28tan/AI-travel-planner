@@ -1,0 +1,64 @@
+@startuml
+title SD Generate AI Itinerary
+
+actor User as User
+participant Frontend
+participant Backend
+participant TripRepository
+participant WeatherService
+participant PlacesService
+participant FlightService
+participant CurrencyService
+participant OpenAi
+participant "OpenWeather API" as OpenWeather
+participant "Aviationstack Flight API" as Aviationstack
+participant "Google Maps APIs" as GoogleMaps
+participant "ExchangeRate-API" as FX
+participant MongoDB
+
+User -> Frontend: Click "Generate Itinerary"
+Frontend -> Backend: POST /api/itineraries/generatIitineraries(ItineraryRequest)
+
+Backend -> TripRepository: findTripWithDetails(tripId, userId)
+TripRepository -> MongoDB: Query trip + prefs
+MongoDB --> TripRepository: Trip + Preference
+TripRepository --> Backend: Trip + Preference
+
+Backend -> WeatherService: getForecast(dest, dates)
+WeatherService -> OpenWeather: Request forecast
+OpenWeather --> WeatherService: Forecast data
+WeatherService --> Backend: List<WeatherForecast>
+
+Backend -> PlacesService: getPointsOfInterest(dest)
+PlacesService -> GoogleMaps: Nearby search
+GoogleMaps --> PlacesService: Points of Interest
+PlacesService --> Backend: List<Points of Interest>
+
+Backend -> FlightService: getFlights(origin, dest, dates)
+FlightService -> Aviationstack: Search flights
+Aviationstack --> FlightService: Flight options
+FlightService --> Backend: List<FlightOption>
+
+Backend -> PlacesService: estimateRoute(origin, dest)
+PlacesService -> GoogleMaps: Directions API
+GoogleMaps --> PlacesService: Route data
+PlacesService --> Backend: RouteEstimate
+
+Backend -> CurrencyService: getRate(homeCurrency, destCurrency)
+CurrencyService -> FX: Request rate
+FX --> CurrencyService: Rate value
+CurrencyService --> Backend: CurrencyRate
+
+Backend -> OpenAi: generateItinerary(trip, preferences)
+OpenAi -> OpenAi: LLM reasoning\n(build per-day plan)
+OpenAi --> Backend: Itinerary + ItineraryDays
+
+Backend -> TripRepository: saveTrip(trip, prefs,\nitinerary)
+TripRepository -> MongoDB: update trip + itinerary
+MongoDB --> TripRepository: saved
+TripRepository --> Backend: confimation
+
+Backend --> Frontend: 200 ItineraryResponse
+Frontend --> User: Display AI itinerary\nwith day-by-day details
+
+@enduml

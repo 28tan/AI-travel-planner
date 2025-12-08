@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: AI Travel Planner API
+  version: 1.0.0
+  description: Core API for the AI Travel Planner system.
+paths:
+  /auth/login:
+    get:
+      summary: Initiate Google OAuth login
+      responses:
+        '302':
+          description: Redirect to Google
+  /auth/callback:
+    get:
+      summary: Google OAuth callback
+      responses:
+        '200':
+          description: Login successful, returns session token
+  /users/me/preferences:
+    put:
+      summary: Update user travel preferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                preferences:
+                  type: string
+      responses:
+        '200':
+          description: Preferences updated
+  /trips:
+    post:
+      summary: Plan a new trip (Generate Summary)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTripRequest'
+      responses:
+        '200':
+          description: Trip summary generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripSummaryResponse'
+    get:
+      summary: List user's saved trips
+      responses:
+        '200':
+          description: List of trips
+  /trips/{tripId}/itinerary:
+    post:
+      summary: Generate AI Itinerary for a trip
+      responses:
+        '200':
+          description: Itinerary generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryResponse'
+    get:
+      summary: Get existing itinerary
+      responses:
+        '200':
+          description: Itinerary details
+
+components:
+  schemas:
+    CreateTripRequest:
+      type: object
+      required:
+        - destination
+        - start_date
+        - end_date
+        - budget
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        budget:
+          type: number
+        transportation_preference:
+          type: string
+          enum: [FLIGHT, DRIVE, BOTH]
+    TripSummaryResponse:
+      type: object
+      properties:
+        trip_id:
+          type: string
+        weather_summary:
+          type: string
+        currency_rate:
+          type: string
+    ItineraryResponse:
+      type: object
+      properties:
+        trip_id:
+          type: string
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              day:
+                type: integer
+              morning:
+                type: string
+              afternoon:
+                type: string
+              evening:
+                type: string

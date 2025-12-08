@@ -1,0 +1,28 @@
+@startuml
+title SD - View Weather Forecast
+
+actor User as User
+participant Frontend
+participant Backend
+participant TripRepository
+participant WeatherService
+participant "OpenWeather API" as OpenWeather
+participant MongoDB
+
+User -> Frontend: Open "Weather Forecast"
+Frontend -> Backend: GET /api/trips/{tripId}/weather
+
+Backend -> TripRepository: loadTrip(tripId, userId)
+TripRepository -> MongoDB: find trip by ID
+MongoDB --> TripRepository: Trip(destination, dates)
+TripRepository --> Backend: Trip data
+
+Backend -> WeatherService: getForecast(coords, dates)
+WeatherService -> OpenWeather: Request forecast
+OpenWeather --> WeatherService: Forecast data
+WeatherService --> Backend: List<WeatherForecast>
+
+Backend --> Frontend: 200 WeatherForecastResponse
+Frontend --> User: Show temp, precipitation,\nhourly/daily charts
+
+@enduml

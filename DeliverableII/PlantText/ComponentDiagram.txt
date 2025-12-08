@@ -1,0 +1,95 @@
+@startuml
+title Component Diagram 
+
+
+package "Frontend Layer (React/Next.js)" {
+
+  [Web UI] <<Component>>
+
+  interface AuthAPI
+  interface TripAPI
+  interface ItineraryAPI
+  interface SavedTripsAPI
+
+  [Web UI] --( AuthAPI
+  [Web UI] --( TripAPI
+  [Web UI] --( ItineraryAPI
+  [Web UI] --( SavedTripsAPI
+}
+
+package "Backend Layer (FastAPI + LangGraph)" {
+
+  [AuthController] <<Component>>
+  [TripController] <<Component>>
+  [AITravelAgent] <<Component>>
+  [WeatherService] <<Component>>
+  [FlightService] <<Component>>
+  [PlacesService] <<Component>>
+  [CurrencyService] <<Component>>
+  [TripRepository] <<Component>>
+  [PreferenceRepository] <<Component>>
+  [TravelerRepository] <<Component>>
+
+  AuthAPI -- [AuthController]
+  TripAPI -- [TripController]
+  ItineraryAPI -- [TripController]
+  SavedTripsAPI -- [TripController]
+
+  [TripController] --> [WeatherService]
+  [TripController] --> [FlightService]
+  [TripController] --> [PlacesService]
+  [TripController] --> [CurrencyService]
+  [TripController] --> [AITravelAgent]
+  [TripController] --> [TripRepository]
+
+  [AuthController] --> [AuthService]
+  [AuthService] --> [TravelerRepository]
+
+  [AITravelAgent] --> [WeatherService]
+  [AITravelAgent] --> [PlacesService]
+  [AITravelAgent] --> [FlightService]
+  [AITravelAgent] --> [CurrencyService]
+
+  interface RequiresOAuth
+  interface RequiresWeatherAPI
+  interface RequiresFlightAPI
+  interface RequiresMapsAPI
+  interface RequiresCurrencyAPI
+  interface RequiresDB
+
+  [AuthController] --( RequiresOAuth
+  [WeatherService] --( RequiresWeatherAPI
+  [FlightService] --( RequiresFlightAPI
+  [PlacesService] --( RequiresMapsAPI
+  [CurrencyService] --( RequiresCurrencyAPI
+  [TripRepository] --( RequiresDB
+  [PreferenceRepository] --( RequiresDB
+  [TravelerRepository] --( RequiresDB
+  
+   [AITravelAgent]--( RequireAiReasoning 
+}
+
+
+package "External API Layer" {
+  [Google OAuth] <<External>>
+  [OpenWeather API] <<External>>
+  [Aviationstack Flight API] <<External>>
+  [Google Maps APIs] <<External>>
+  [ExchangeRate-API] <<External>>
+  [OpenAIAPI] <<External>>
+}
+
+RequiresOAuth -- [Google OAuth]
+RequiresWeatherAPI -- [OpenWeather API]
+RequiresFlightAPI -- [Aviationstack Flight API]
+RequiresMapsAPI -- [Google Maps APIs]
+RequiresCurrencyAPI -- [ExchangeRate-API]
+OpenAIAPI -- [RequireAiReasoning]
+
+package "Database Layer" {
+  [MongoDB Atlas] <<Database>>
+}
+
+RequiresDB -- [MongoDB Atlas]
+
+@enduml

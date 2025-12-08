@@ -1,0 +1,66 @@
+@startuml
+title SD Plan Trip
+
+actor User as User
+participant Frontend
+participant Backend
+participant PlacesService
+participant WeatherService
+participant FlightService
+participant CurrencyService
+participant "OpenWeather API" as OpenWeather
+participant "Aviationstack Flight API" as Aviationstack
+participant "Google Maps APIs" as GoogleMaps
+participant "ExchangeRate-API" as FX
+participant OpenAI as AI
+participant MongoDB as Mongo
+
+
+User -> Frontend: Fill trip form\n(origin, destination, dates,\nbudget, prefs, transport mode)
+Frontend -> Backend: POST /api/trips/plan(TripRequest)
+
+Backend -> PlacesService: geocode(destination)
+PlacesService -> GoogleMaps: Geocode address
+GoogleMaps --> PlacesService: Coordinates
+PlacesService --> Backend: Coordinates
+
+Backend -> WeatherService: getForecast(dest, dates)
+WeatherService -> OpenWeather: Request forecast
+OpenWeather --> WeatherService: Forecast data
+WeatherService --> Backend: List<WeatherForecast>
+
+alt transport includes flights
+  Backend -> FlightService: getFlights(origin, dest, dates)
+  FlightService -> Aviationstack: Search flights
+  Aviationstack --> FlightService: Flight options
+  FlightService --> Backend: List<FlightOption>
+else flights not requested
+  Backend -> Backend: Skip flights lookup
+end
+
+alt transport includes driving
+  Backend -> PlacesService: estimateRoute(origin, dest)
+  PlacesService -> GoogleMaps: Directions API
+  GoogleMaps --> PlacesService: Route data
+  PlacesService --> Backend: RouteEstimate
+else driving not requested
+  Backend -> Backend: Skip driving route lookup
+end
+
+Backend -> PlacesService: getPointsOfInterest(dest)
+PlacesService -> GoogleMaps: Nearby search
+GoogleMaps --> PlacesService: Points of Interest list
+PlacesService --> Backend: List<Attraction>
+
+Backend -> CurrencyService: getRate(homeCurrency, destCurrency)
+CurrencyService -> FX: Request rate
+FX --> CurrencyService: Rate value
+CurrencyService --> Backend: CurrencyRate
+Backend -> AI:  weather,\ntransport, POIs, currency,preferences\n to get TripPlanSummary
+AI --> Backend: Retrun TripPlanSummary
+Backend -> Mongo: save TripPlanSummary
+
+Backend --> Frontend: 200 TripPlanSummary (JSON)
+Frontend --> User: Show weather,\ntransport options, POIs,\nand budget hints
+
+@enduml

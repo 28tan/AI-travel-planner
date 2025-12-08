@@ -1,0 +1,40 @@
+@startuml
+title SD Manage Saved Trips
+
+actor User as User
+participant Frontend
+participant Backend
+participant TripRepository
+participant MongoDB
+
+== Save Trip ==
+User -> Frontend: Click "Save Trip"
+Frontend -> Backend: POST /api/trips/save(tripId)
+Backend -> TripRepository: saveTrip(trip, prefs, itinerary, days)
+TripRepository -> MongoDB: upsert trip document
+MongoDB --> TripRepository: saved
+TripRepository --> Backend: ack
+Backend --> Frontend: 200 SaveConfirmation
+Frontend --> User: Show "Trip saved"
+
+== View Trips ==
+User -> Frontend: Open "My Trips"
+Frontend -> Backend: GET /api/trips
+Backend -> TripRepository: findTripsByUser(userId)
+TripRepository -> MongoDB: query trips by userId
+MongoDB --> TripRepository: trips[]
+TripRepository --> Backend: trips[]
+Backend --> Frontend: 200 trips[]
+Frontend --> User: Display list of trips
+
+== Delete Trip ==
+User -> Frontend: Click "Delete Trip"
+Frontend -> Backend: DELETE /api/trips/{tripId}
+Backend -> TripRepository: deleteTrip(userId, tripId)
+TripRepository -> MongoDB: delete trip
+MongoDB --> TripRepository: deleted
+TripRepository --> Backend: ack
+Backend --> Frontend: 200 DeleteConfirmation
+Frontend --> User: Update trip list
+
+@enduml

@@ -1,0 +1,75 @@
+@startuml
+title Cloud Deployment Diagram - GCP (Rolling Deployment)
+
+
+node "User Device" {
+  [Web Browser / UI]
+}
+
+
+node "Google Cloud Platform (GCP)" {
+
+  ' ---- Firebase Hosting (Static Frontend) ----
+  node "Firebase Hosting" as firebase {
+    [Static Frontend (React / Next.js build)]
+  }
+
+  ' ---- Cloud Run Backend with Rolling Deployment ----
+  node "Cloud Run Service\ntravel-backend" as cloudrun {
+    frame "Python Fast api Rolling Deployment" {
+      [Revision A\n(Current Production)] as revA
+      [Revision B\n(New Release)] as revB
+
+      ' traffic shifting (dashed blue line)
+      revA -[#blue,dashed]-> revB : gradual traffic shift
+    }
+  }
+
+  ' ---- Google APIs ----
+  node "Google APIs" {
+    [Google OAuth API]
+    [Google Maps Platform]
+  }
+}
+
+
+database "MongoDB Atlas (Cloud DB)" as mongo {
+  [MongoDB Cluster]
+}
+
+node "External APIs" {
+  [OpenWeather API]
+  [Aviationstack Flight API]
+  [ExchangeRate-API]
+  [OpenAI API]
+}
+
+
+
+'--- Frontend Access ---
+[Web Browser / UI] --> [Static Frontend (React / Next.js build)] : HTTPS 443
+[Static Frontend (React / Next.js build)] --> cloudrun : HTTPS 443 (REST API)
+
+'--- Backend to Database ---
+revA --> [MongoDB Cluster] : TLS Encrypted
+revB --> [MongoDB Cluster] : TLS Encrypted
+
+'--- Backend to External APIs ---
+revA --> [OpenWeather API] : HTTPS 443
+revA --> [Aviationstack Flight API] : HTTPS 443
+revA --> [ExchangeRate-API] : HTTPS 443
+revA --> [OpenAI API] : HTTPS 443
+
+revB --> [OpenWeather API] : HTTPS 443
+revB --> [Aviationstack Flight API] : HTTPS 443
+revB --> [ExchangeRate-API] : HTTPS 443
+revB --> [OpenAI API] : HTTPS 443
+
+'--- Backend to Google APIs ---
+revA --> [Google OAuth API] : HTTPS 443
+revA --> [Google Maps Platform] : HTTPS 443
+
+revB --> [Google OAuth API] : HTTPS 443
+revB --> [Google Maps Platform] : HTTPS 443
+
+@enduml
