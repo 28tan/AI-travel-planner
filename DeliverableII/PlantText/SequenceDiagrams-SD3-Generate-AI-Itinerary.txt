@@ -1,7 +1,7 @@
 @startuml
 title SD Generate AI Itinerary
 
-actor Traveler as User
+actor User as User
 participant Frontend
 participant Backend
 participant TripRepository

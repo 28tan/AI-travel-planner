@@ -1,7 +1,7 @@
 @startuml
 title SD Manage Saved Trips
 
-actor Traveler as User
+actor User as User
 participant Frontend
 participant Backend
 participant TripRepository

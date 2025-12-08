@@ -17,13 +17,24 @@ async def test_get_forecast_success():
         mock_client_instance = MockClient.return_value.__aenter__.return_value
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {"list": [{"dt": 123, "main": {"temp": 20}}]}
+        mock_response.json.return_value = {
+            "list": [
+                {
+                    "dt": 1672531200,
+                    "dt_txt": "2023-01-01 12:00:00",
+                    "main": {"temp": 20},
+                    "weather": [{"main": "Clear", "icon": "01d"}]
+                }
+            ]
+        }
         mock_client_instance.get = AsyncMock(return_value=mock_response)
 
         service = WeatherService()
         result = await service.get_forecast(40.7128, -74.0060)
 
-        assert result["list"][0]["main"]["temp"] == 20
+        assert "daily" in result
+        assert len(result["daily"]) == 1
+        assert result["daily"][0]["temp_max"] == 20
         mock_client_instance.get.assert_called_once()
 
 @pytest.mark.asyncio
@@ -36,7 +47,7 @@ async def test_get_forecast_no_key():
         service = WeatherService()
         result = await service.get_forecast(40.7128, -74.0060)
 
-        assert result["mock"] is True
+        assert result == {}
 
 @pytest.mark.asyncio
 async def test_get_forecast_failure():

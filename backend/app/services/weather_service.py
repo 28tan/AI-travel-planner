@@ -1,22 +1,23 @@
 import httpx
 from app.core.config import get_settings
 from app.core.resilience import CircuitBreaker
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from datetime import date, datetime
 
 class WeatherService:
     def __init__(self):
         self.settings = get_settings()
         self.base_url = "https://api.openweathermap.org/data/2.5"
 
-    async def get_forecast(self, lat: float, lon: float) -> Dict[str, Any]:
+    async def get_forecast(self, lat: float, lon: float, start_date: Optional[date] = None, end_date: Optional[date] = None) -> Dict[str, Any]:
         try:
-            return await self._get_forecast_impl(lat, lon)
+            return await self._get_forecast_impl(lat, lon, start_date, end_date)
         except Exception as e:
             print(f"Weather API Error (Circuit Breaker): {e}")
             return {"error": str(e)}
 
     @CircuitBreaker(failure_threshold=3, recovery_timeout=60)
-    async def _get_forecast_impl(self, lat: float, lon: float) -> Dict[str, Any]:
+    async def _get_forecast_impl(self, lat: float, lon: float, start_date: Optional[date] = None, end_date: Optional[date] = None) -> Dict[str, Any]:
         """
         Fetch 5 day / 3 hour forecast data from OpenWeatherMap and aggregate to daily.
         """
@@ -36,7 +37,18 @@ class WeatherService:
             )
             response.raise_for_status()
             data = response.json()
-            return self._process_forecast(data)
+            result = self._process_forecast(data)
+            
+            # Filter by date range if provided
+            if start_date and end_date and "daily" in result:
+                filtered_daily = []
+                for day in result["daily"]:
+                    day_date = datetime.strptime(day["date"], "%Y-%m-%d").date()
+                    if start_date <= day_date <= end_date:
+                        filtered_daily.append(day)
+                result["daily"] = filtered_daily
+                
+            return result
 
     def _process_forecast(self, data: Dict[str, Any]) -> Dict[str, Any]:
         daily_summary = {}

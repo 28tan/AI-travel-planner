@@ -92,11 +92,9 @@ class PlacesService:
             print("DEBUG: No Google Maps API Key provided.")
             return []
 
-        # Determine keywords/types to search
-        # Exclude lodging by default unless requested
-        search_queries = ["tourist_attraction", "restaurant", "museum", "park", "point_of_interest"]
+        # Determine keywords/types to search based on preferences
+        search_queries = []
         
-        # Simple preference matching to add more specific searches
         if preferences:
             pref_lower = preferences.lower()
             if "hotel" in pref_lower or "stay" in pref_lower:
@@ -110,6 +108,22 @@ class PlacesService:
             if "food" in pref_lower or "eat" in pref_lower:
                 search_queries.append("restaurant")
                 search_queries.append("cafe")
+            if "nightlife" in pref_lower or "bar" in pref_lower:
+                search_queries.append("bar")
+                search_queries.append("night_club")
+
+        # If no specific preferences matched, or as a fallback/base, add general categories
+        # But if preferences WERE matched, we prioritize them by putting them first.
+        # We add 'tourist_attraction' to ensure we get major landmarks regardless.
+        if not search_queries:
+             # Default set if no preferences
+             search_queries = ["tourist_attraction", "restaurant", "museum", "park"]
+        else:
+             # Append general attraction to the end so specific prefs come first
+             search_queries.append("tourist_attraction")
+
+        # Remove duplicates while preserving order
+        unique_queries = list(dict.fromkeys(search_queries))
 
         all_results = []
         seen_place_ids = set()
@@ -117,7 +131,7 @@ class PlacesService:
         async with httpx.AsyncClient() as client:
             import asyncio
             tasks = []
-            for query in set(search_queries): # Use set to avoid duplicates
+            for query in unique_queries:
                 tasks.append(self._fetch_places(client, lat, lng, query))
             
             results_list = await asyncio.gather(*tasks)

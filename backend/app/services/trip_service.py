@@ -28,25 +28,27 @@ class TripService:
             lat, lon = dest_coords['lat'], dest_coords['lng']
 
         # 2. Parallel Fetch of External Data
-        weather_task = self.weather_service.get_forecast(lat, lon)
+        weather_task = self.weather_service.get_forecast(lat, lon, request.start_date, request.end_date)
         
         # For flights, we need IATA codes. Geocoding gives coords. 
         # Real implementation would need Airport lookup. 
         # For MVP, we might skip or mock IATA lookup or use city names if API supports.
         # Aviationstack needs IATA. We'll skip or mock for now if we don't have IATA.
-        flight_task = asyncio.sleep(0, result=None)
-        return_flight_task = asyncio.sleep(0, result=None)
         if request.transportation_preference in [TransportationPreference.FLIGHT, TransportationPreference.BOTH]:
             origin_iata = self.flight_service.get_iata_code(request.origin)
             dest_iata = self.flight_service.get_iata_code(request.destination)
             flight_task = self.flight_service.search_flights(origin_iata, dest_iata)
             return_flight_task = self.flight_service.search_flights(dest_iata, origin_iata)
+        else:
+            flight_task = asyncio.sleep(0, result=None)
+            return_flight_task = asyncio.sleep(0, result=None)
         
         poi_task = self.places_service.search_nearby(lat, lon, request.trip_preferences)
 
-        driving_task = asyncio.sleep(0, result=None)
         if request.transportation_preference in [TransportationPreference.DRIVE, TransportationPreference.BOTH]:
             driving_task = self.route_service.get_driving_estimate(request.origin, request.destination)
+        else:
+            driving_task = asyncio.sleep(0, result=None)
 
         origin_country_task = self.places_service.get_country(request.origin)
         dest_country_task = self.places_service.get_country(request.destination)

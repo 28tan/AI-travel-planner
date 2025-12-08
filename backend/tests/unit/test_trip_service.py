@@ -20,6 +20,7 @@ async def test_create_trip_plan():
 
         # Configure async mocks
         mock_places_service.geocode = AsyncMock(return_value={'lat': 40.7128, 'lng': -74.0060})
+        mock_places_service.get_country = AsyncMock(return_value="USA")
         mock_weather_service.get_forecast = AsyncMock(return_value={'summary': 'Sunny'})
         mock_flight_service.search_flights = AsyncMock(return_value=[{'flight': 'AA123'}])
         mock_places_service.search_nearby = AsyncMock(return_value=[{'name': 'Central Park'}])
@@ -59,5 +60,11 @@ async def test_create_trip_plan():
         assert response.poi_highlights == [{'name': 'Central Park'}]
         
         mock_places_service.geocode.assert_called()
-        mock_weather_service.get_forecast.assert_called()
+        # Verify that get_forecast was called with the correct dates
+        mock_weather_service.get_forecast.assert_called_with(
+            40.7128, 
+            -74.0060, 
+            request.start_date, 
+            request.end_date
+        )
         mock_trip_repo.create_trip.assert_called()

@@ -26,7 +26,7 @@ export default function WeatherView({ data }: WeatherViewProps) {
             onClick={() => setSelectedDay(selectedDay === day ? null : day)}
           >
             <p className="text-sm font-medium text-gray-600">
-              {new Date(day.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+              {new Date(day.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
             </p>
             <div className="my-2">
                <span className="text-2xl">{day.icon}</span>
@@ -43,7 +43,7 @@ export default function WeatherView({ data }: WeatherViewProps) {
       {selectedDay && selectedDay.hourly && (
         <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 overflow-x-auto shadow-inner animate-fade-in">
             <h4 className="text-xs font-semibold text-indigo-800 mb-2 uppercase tracking-wider">
-                Hourly Forecast for {new Date(selectedDay.date).toLocaleDateString(undefined, { weekday: 'long' })}
+                Hourly Forecast for {new Date(selectedDay.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long' })}
             </h4>
             <div className="flex space-x-6 min-w-max pb-2">
                 {selectedDay.hourly.map((hour: any, hIdx: number) => (

@@ -61,7 +61,7 @@ The system needs to provide the following functionalities:
 * **Weather view**
     * Show detailed destination forecasts for select dates.
     * Allow charts or a summarized daily breakdown.
-* **Transition/flight search**
+* **Tranportation/flight search**
     * Show flight options if available.
     * Show driving distance/time if possible.
 * **AI Itinerary generation**
