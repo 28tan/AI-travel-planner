@@ -488,7 +488,7 @@ The system structure is broken up into four layers:
 
 The component structure shows how each component interacts using provided and required interfaces. It also shows how the system could later be broken down into a microservice architecture by separating each service into its own respective service Api.
 
-* ![Component Diagram showing Frontend, Backend, Database, and External API layers](Images/ComponentDiagram.png)
+![Component Diagram showing Frontend, Backend, Database, and External API layers](Images/ComponentDiagram.png)
 
 ### Cloud Deployment Diagram
 The deployment architecture uses Google Cloud hosting services:
@@ -501,9 +501,9 @@ This setup allows for secure communication over **HTTPS on port 443**. The backe
 
 The chosen deployment pattern is **rolling deployment**, which gradually shifts traffic from the old version to the new one when a new version is deployed. This results in zero downtime, and any issues allow for a rollback to the previous Docker image. This works well with the Google Cloud Run revision systems.
 
-* ![Cloud Deployment Diagram on Google Cloud Platform](Images/deploy.png)
+![Cloud Deployment Diagram on Google Cloud Platform](Images/deploy.png)
 
---
+
 
 ## Skeleton Classes
 The skeleton classes can be found in the Skeleton_Classes folder
